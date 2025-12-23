@@ -31,7 +31,10 @@ This project combines a custom **Flutter Mobile App** with an **ESP32-based Sens
 
 | Splash Screen | Main Dashboard | Global Weather |
 |:---:|:---:|:---:|
-| <img src="screenshots/splash.png" width="200"> | <img src="screenshots/dashboard.png" width="200"> | <img src="screenshots/global.png" width="200"> |
+| ![!](https://github.com/user-attachments/assets/20c63026-2bff-42bb-a356-2cc7491330bc)
+ | ![2](https://github.com/user-attachments/assets/0a94e935-8191-4a8f-a0c5-64c6ac38a796)
+ | ![3](https://github.com/user-attachments/assets/31e2a5c1-1618-456c-8f21-eda0397a29ca)
+ |
 *(Note: Please upload screenshots to a `screenshots` folder to view them here)*
 
 ## 🏗️ System Architecture
