@@ -35,7 +35,6 @@ This project combines a custom **Flutter Mobile App** with an **ESP32-based Sens
  | ![2](https://github.com/user-attachments/assets/0a94e935-8191-4a8f-a0c5-64c6ac38a796)
  | ![3](https://github.com/user-attachments/assets/31e2a5c1-1618-456c-8f21-eda0397a29ca)
  |
-*(Note: Please upload screenshots to a `screenshots` folder to view them here)*
 
 ## 🏗️ System Architecture
 
