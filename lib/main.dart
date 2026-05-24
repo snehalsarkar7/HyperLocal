@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'splash_screen.dart';
@@ -43,14 +44,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Hyperlocal IoT',
       theme: ThemeData(
-        primarySwatch: Colors.yellow,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF222222),
+        scaffoldBackgroundColor: Colors.transparent, // Let gradient show through
         appBarTheme: const AppBarTheme(
-          color: Color(0xFF222222),
+          backgroundColor: Colors.transparent,
           elevation: 0,
         ),
-        cardColor: const Color(0xFF333333),
         textTheme: const TextTheme(
           headlineSmall: TextStyle(
               color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
@@ -64,146 +63,249 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Hyper Local Weather Station',
-          style: TextStyle(
-              color: Color(0xFF00E676)), // Bright green for title
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.wb_sunny_outlined, color: Colors.white),
-            tooltip: 'Global Weather',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const WeatherPage()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildGaugeCard(
-              context,
-              title: 'TEMPERATURE',
-              value: latestReading.temperature,
-              unit: '°C',
-              minimum: -100,
-              maximum: 100,
-              gaugeColor: const Color(0xFFFFFF00), // Yellow
-            ),
-            const SizedBox(height: 20),
+  State<HomePage> createState() => _HomePageState();
+}
 
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Soil Moisture',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: const Color(0xFF00E676)), // Green text
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${latestReading.moisture.toStringAsFixed(0)}%',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                            color: Colors.amber, // Orange for moisture
-                            fontSize: 48,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            value: latestReading.moisture / 100,
-                            backgroundColor: Colors.grey.shade700,
-                            color: Colors.blueGrey,
-                            minHeight: 8,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        _buildTimeFilterChip(context, '12h', true),
-                        const SizedBox(width: 8),
-                        _buildTimeFilterChip(context, '1d', false),
-                        const SizedBox(width: 8),
-                        _buildTimeFilterChip(context, '1wk', false),
-                      ],
-                    ),
-                  ],
-                ),
+class _HomePageState extends State<HomePage> {
+  String selectedFilter = '12h';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0D0D1A), // Deep midnight blue
+            Color(0xFF1A1A2E), // Darker slate
+            Color(0xFF0F0F1A), // Almost black
+          ],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Color(0xFF00E676), Color(0xFF18FFFF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds),
+            child: const Text(
+              'Hyper Local Station',
+              style: TextStyle(
+                color: Colors.white, // Required for ShaderMask
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
               ),
             ),
-            const SizedBox(height: 20),
-
-            _buildGaugeCard(
-              context,
-              title: 'Humidity',
-              value: latestReading.humidity,
-              unit: '%',
-              minimum: -100,
-              maximum: 100,
-              gaugeColor: const Color(0xFF00E676), // Bright green
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.wb_sunny_outlined, color: Colors.white),
+              tooltip: 'Global Weather',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WeatherPage()),
+                );
+              },
             ),
-            const SizedBox(height: 20),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildGaugeCard(
+                context,
+                title: 'TEMPERATURE',
+                value: latestReading.temperature,
+                unit: '°C',
+                minimum: -20,
+                maximum: 60,
+                icon: Icons.thermostat_outlined,
+                iconColor: const Color(0xFFFF9800),
+                gradientColors: const [Color(0xFFFFD54F), Color(0xFFFF9800)],
+              ),
+              const SizedBox(height: 24),
+
+              // Soil Moisture Glass Card
+              _buildGlassContainer(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SOIL MOISTURE',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: const Color(0xFF18FFFF), // Cyan text
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                      ),
+                      const SizedBox(height: 15),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${latestReading.moisture.toStringAsFixed(0)}%',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Container(
+                              height: 14,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(7),
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      width: constraints.maxWidth * (latestReading.moisture / 100),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(7),
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF00E676), Color(0xFF18FFFF)],
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF18FFFF).withValues(alpha: 0.5),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 25),
+                      Row(
+                        children: [
+                          _buildTimeFilterChip(context, '12h'),
+                          const SizedBox(width: 10),
+                          _buildTimeFilterChip(context, '1d'),
+                          const SizedBox(width: 10),
+                          _buildTimeFilterChip(context, '1wk'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              _buildGaugeCard(
+                context,
+                title: 'HUMIDITY',
+                value: latestReading.humidity,
+                unit: '%',
+                minimum: 0,
+                maximum: 100,
+                icon: Icons.water_drop_outlined,
+                iconColor: const Color(0xFF00E5FF),
+                gradientColors: const [Color(0xFF00E5FF), Color(0xFFD500F9)],
+              ),
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassContainer({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 1.5,
+            ),
+          ),
+          child: child,
         ),
       ),
     );
   }
 
   Widget _buildGaugeCard(
-      BuildContext context, {
-        required String title,
-        required double value,
-        required String unit,
-        required double minimum,
-        required double maximum,
-        required Color gaugeColor,
-      }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    BuildContext context, {
+    required String title,
+    required double value,
+    required String unit,
+    required double minimum,
+    required double maximum,
+    required IconData icon,
+    required Color iconColor,
+    required List<Color> gradientColors,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF221E36), // Deep purple/navy card background
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: gaugeColor),
+            Row(
+              children: [
+                Icon(icon, color: iconColor, size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 1.2,
+                        fontSize: 20,
+                      ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             SizedBox(
-              height: 200,
+              height: 250,
               child: SfRadialGauge(
                 axes: <RadialAxis>[
                   RadialAxis(
@@ -213,64 +315,67 @@ class HomePage extends StatelessWidget {
                     maximum: maximum,
                     showLabels: false,
                     showTicks: false,
-                    pointers: <GaugePointer>[
-                      NeedlePointer(
-                        value: value,
-                        enableAnimation: true,
-                        needleStartWidth: 1,
-                        needleEndWidth: 5,
-                        needleColor: gaugeColor,
-                        knobStyle: KnobStyle(color: gaugeColor, knobRadius: 0.08),
-                      ),
-                    ],
+                    radiusFactor: 0.9,
                     axisLineStyle: AxisLineStyle(
-                        thickness: 0.1,
-                        cornerStyle: CornerStyle.bothCurve,
-                        color: Colors.grey.shade700,
-                        thicknessUnit: GaugeSizeUnit.factor),
-                    ranges: <GaugeRange>[
-                      GaugeRange(
-                        startValue: minimum,
-                        endValue: value,
-                        color: gaugeColor,
-                        startWidth: 0.1,
-                        endWidth: 0.1,
+                      thickness: 0.12,
+                      cornerStyle: CornerStyle.bothFlat,
+                      color: const Color(0xFF4A3E6D).withValues(alpha: 0.3),
+                      thicknessUnit: GaugeSizeUnit.factor,
+                      dashArray: const <double>[5, 4],
+                    ),
+                    pointers: <GaugePointer>[
+                      RangePointer(
+                        value: value,
+                        width: 0.12,
                         sizeUnit: GaugeSizeUnit.factor,
+                        cornerStyle: CornerStyle.bothFlat,
+                        dashArray: const <double>[5, 4],
+                        gradient: SweepGradient(
+                          colors: gradientColors,
+                        ),
+                      ),
+                      MarkerPointer(
+                        value: value,
+                        markerType: MarkerType.rectangle,
+                        color: Colors.white,
+                        markerHeight: 18,
+                        markerWidth: 5,
+                        borderWidth: 0,
+                        elevation: 4,
                       ),
                     ],
                     annotations: <GaugeAnnotation>[
                       GaugeAnnotation(
-                        widget: Text(
-                          minimum.toStringAsFixed(0),
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        widget: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              '${value.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 64,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -2,
+                              ),
+                            ),
+                            Text(
+                              unit,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        angle: 150,
-                        positionFactor: 1.2,
-                      ),
-                      GaugeAnnotation(
-                        widget: Text(
-                          maximum.toStringAsFixed(0),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        angle: 30,
-                        positionFactor: 1.2,
+                        angle: 90,
+                        positionFactor: 0.1,
                       ),
                     ],
                   ),
                 ],
-              ),
-            ),
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: Text(
-                  '${value.toStringAsFixed(0)} $unit',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(color: gaugeColor, fontSize: 36),
-                ),
               ),
             ),
           ],
@@ -279,20 +384,43 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeFilterChip(
-      BuildContext context, String text, bool isSelected) {
-    return ChoiceChip(
-      label: Text(text),
-      selected: isSelected,
-      selectedColor: const Color(0xFF00E676),
-      backgroundColor: Theme.of(context).cardColor,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.black : Colors.white,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-      onSelected: (selected) {
-
+  Widget _buildTimeFilterChip(BuildContext context, String text) {
+    bool isSelected = selectedFilter == text;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = text;
+        });
       },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF18FFFF).withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF18FFFF) : Colors.white.withValues(alpha: 0.15),
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF18FFFF).withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  )
+                ]
+              : [],
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ),
     );
   }
 }
