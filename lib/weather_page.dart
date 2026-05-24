@@ -4,7 +4,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'weather_service.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -24,7 +23,6 @@ class _WeatherPageState extends State<WeatherPage>
   List<String> _favorites = [];
   String _currentCity = "";
   bool _isUsingLocation = true;
-  String? _bgImageUrl;
 
   late AnimationController _iconAnimationController;
   late Animation<double> _floatingAnimation;
@@ -82,9 +80,7 @@ class _WeatherPageState extends State<WeatherPage>
           position.latitude, position.longitude);
       _currentCity = _currentWeather!['name'];
       _isUsingLocation = true;
-      final bgUrl = await _weatherService.getCityImage(_currentCity);
       setState(() {
-        _bgImageUrl = bgUrl;
         _isLoading = false;
       });
     } catch (e) {
@@ -106,9 +102,7 @@ class _WeatherPageState extends State<WeatherPage>
       _forecastData = await _weatherService.getForecastByCity(city);
       _currentCity = _currentWeather!['name'];
       _isUsingLocation = false;
-      final bgUrl = await _weatherService.getCityImage(_currentCity);
       setState(() {
-        _bgImageUrl = bgUrl;
         _isLoading = false;
       });
     } catch (e) {
@@ -232,7 +226,7 @@ class _WeatherPageState extends State<WeatherPage>
       ),
       body: Stack(
         children: [
-          // 1. Base Gradient Background (Fallback)
+          // 1. Base Gradient Background
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -249,24 +243,7 @@ class _WeatherPageState extends State<WeatherPage>
             ),
           ),
 
-          // 2. Network Image Layer (if available)
-          if (_bgImageUrl != null)
-            Positioned.fill(
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withValues(alpha: 0.5),
-                  BlendMode.darken,
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: _bgImageUrl!,
-                  fit: BoxFit.cover,
-                  // PROFESSIONAL FIX: We use the actual widget here instead of DecorationImage 
-                  // to bypass the Flutter Impeller Vulkan engine's inverted-Y texture bug on Android.
-                ),
-              ),
-            ),
-
-          // 3. Foreground Content Layer
+          // 2. Foreground Content Layer
           Positioned.fill(
             child: SafeArea(
               child: _isLoading
